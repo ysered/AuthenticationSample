@@ -11,10 +11,13 @@ import kotlinx.coroutines.experimental.launch
 class FakeAuthenticationService : AuthenticationService {
 
     companion object {
-        const val RESPONSE_TIME_MS = 3000L
+        const val RESPONSE_TIME_MS = 5000L
     }
 
     private var listJob: Job? = null
+
+    val inProgress: Boolean
+        get() = listJob?.isActive ?: false
 
     override fun authenticatorsList(onListResult: OnListResult) {
         if (!inProgress) {
@@ -27,9 +30,6 @@ class FakeAuthenticationService : AuthenticationService {
             }
         }
     }
-
-    val inProgress: Boolean
-        get() = listJob?.isActive ?: false
 
     fun cancel() {
         if (inProgress) {
