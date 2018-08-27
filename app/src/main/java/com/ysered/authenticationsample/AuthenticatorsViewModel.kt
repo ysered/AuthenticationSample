@@ -4,35 +4,45 @@ import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModel
-import com.ysered.authenticationsample.sdk.FakeAuthenticationService
-import com.ysered.authenticationsample.sdk.OnListResult
-import com.ysered.authenticationsample.sdk.authenticator.Authenticator
+import com.ysered.authenticationsample.sdk.*
 
-class AuthListViewModel : ViewModel() {
 
-    private val authService by lazy { FakeAuthenticationService() }
+class AuthenticatorsViewModel : ViewModel() {
+
+    private val transmitApi = FakeTransmitApi()
+    private var inProgress: Boolean = false
+
     private val authList = MutableLiveData<Result<List<Authenticator>>>()
-    private var cachedList: List<Authenticator> = emptyList()
+
+    private var cachedAuth: Set<Authenticator> = emptySet()
+    var currentAuthenticator: Authenticator? = null
 
     fun observeAuthList(owner: LifecycleOwner, observer: Observer<Result<List<Authenticator>>>) {
         authList.observe(owner, observer)
         loadData()
     }
 
+    fun authenticateByPassword(password: String) {
+
+    }
+
     private fun loadData() {
-        if (cachedList.isNotEmpty()) {
-            authList.postValue(Result.Success(cachedList))
+        if (cachedAuth.isNotEmpty()) {
+            authList.postValue(Result.Success(cachedAuth.toList()))
             return
         }
-        if (!authService.inProgress) {
+        if (!inProgress) {
+            inProgress = true
             authList.postValue(Result.InProgress())
-            authService.authenticatorsList(object : OnListResult {
+            transmitApi.authenticatorsList(object: OnListResult<Authenticator> {
                 override fun onPositive(result: List<Authenticator>) {
-                    cachedList = result
+                    inProgress = false
+                    cachedAuth = result.toSet()
                     authList.postValue(Result.Success(result))
                 }
 
                 override fun onError(message: String) {
+                    inProgress = false
                     authList.postValue(Result.Error(message))
                 }
             })
@@ -43,6 +53,6 @@ class AuthListViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        authService.cancel()
+        transmitApi.cancelAll()
     }
 }
