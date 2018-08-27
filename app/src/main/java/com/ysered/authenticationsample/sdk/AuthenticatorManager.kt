@@ -1,5 +1,6 @@
 package com.ysered.authenticationsample.sdk
 
+import com.ysered.authenticationsample.AUTH_LIST_LOAD_TIME_MS
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.delay
@@ -19,7 +20,7 @@ object AuthenticatorManager {
     fun fetchAuthenticators(onListResult: OnListResult<Authenticator>) {
         if (!inProgress) {
             fetchListJob = launch(CommonPool) {
-                delay(5_000)
+                delay(AUTH_LIST_LOAD_TIME_MS)
                 passwordAuthenticator = PasswordAuthenticator()
                 fingerprintAuthenticator = FingerprintAuthenticator()
                 authenticatorList = listOf(passwordAuthenticator!!, fingerprintAuthenticator!!)

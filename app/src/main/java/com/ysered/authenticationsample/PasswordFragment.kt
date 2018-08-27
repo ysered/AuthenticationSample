@@ -9,16 +9,16 @@ import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_auth_password.*
 
-class PasswordDialogFragment : Fragment() {
+class PasswordFragment : Fragment() {
 
     companion object {
         private const val ARG_TITLE = "arg_title"
 
-        fun newInstance(title: String): PasswordDialogFragment {
+        fun newInstance(title: String): PasswordFragment {
             val args = Bundle(1).apply {
                 putString(ARG_TITLE, title)
             }
-            return PasswordDialogFragment().apply {
+            return PasswordFragment().apply {
                 arguments = args
             }
         }
@@ -37,11 +37,14 @@ class PasswordDialogFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         authViewModel = ViewModelProviders.of(this)
                 .get(AuthenticatorsViewModel::class.java)
-        val view = inflater.inflate(R.layout.fragment_auth_password, container, false)
+        return inflater.inflate(R.layout.fragment_auth_password, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         submitButton.setOnClickListener {
             //authViewModel.authenticateByPassword()
         }
-        return view
     }
 
     interface PasswordAuthenticatorCallback {
