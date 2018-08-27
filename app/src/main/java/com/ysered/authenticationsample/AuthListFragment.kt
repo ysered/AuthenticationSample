@@ -32,7 +32,7 @@ class AuthListFragment: Fragment() {
 
         authListViewModel = ViewModelProviders.of(this)
                 .get(AuthListViewModel::class.java)
-        authListViewModel.observeAuthList(this, Observer {
+        authListViewModel.authManager.authListData.observe(this, Observer {
             when (it) {
                 is Result.InProgress -> showLoading()
                 is Result.Success -> showList(it.payload)

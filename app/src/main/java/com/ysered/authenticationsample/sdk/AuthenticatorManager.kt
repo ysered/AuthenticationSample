@@ -17,7 +17,7 @@ object AuthenticatorManager {
     private var passwordAuthJob: Job? = null
     private var fingerprintAuthJob: Job? = null
 
-    private var passwordAuthData = MutableLiveData<Result<Unit>>()
+    val passwordAuthData = MutableLiveData<Result<Unit>>()
 
     val authListData = MutableLiveData<Result<List<AuthenticatorInfo>>>()
         get () {
@@ -48,10 +48,10 @@ object AuthenticatorManager {
         }
 
 
-    fun authByPassword(password: String): MutableLiveData<Result<Unit>> {
+    fun authByPassword(password: String) {
         if (passwordAuthJob?.isActive == true) {
             passwordAuthData.postValue(Result.InProgress())
-            return passwordAuthData
+            return
         }
         passwordAuthJob = launch(CommonPool) {
             passwordAuthData.postValue(Result.InProgress())
@@ -65,7 +65,6 @@ object AuthenticatorManager {
                 }
             })
         }
-        return passwordAuthData
     }
 
     fun stopAllJobs() {

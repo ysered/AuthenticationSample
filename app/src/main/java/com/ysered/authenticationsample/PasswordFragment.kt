@@ -1,5 +1,6 @@
 package com.ysered.authenticationsample
 
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Bundle
@@ -10,19 +11,6 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_auth_password.*
 
 class PasswordFragment : Fragment() {
-
-    companion object {
-        private const val ARG_TITLE = "arg_title"
-
-        fun newInstance(title: String): PasswordFragment {
-            val args = Bundle(1).apply {
-                putString(ARG_TITLE, title)
-            }
-            return PasswordFragment().apply {
-                arguments = args
-            }
-        }
-    }
 
     private var authCallback: PasswordAuthenticatorCallback? = null
     private lateinit var authViewModel: AuthListViewModel
@@ -37,15 +25,33 @@ class PasswordFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         authViewModel = ViewModelProviders.of(this)
                 .get(AuthListViewModel::class.java)
-
+        authViewModel.authManager.passwordAuthData.observe(this, Observer {
+            when (it) {
+                is Result.InProgress -> showLoading(isLoading = true)
+                is Result.Success -> it.payload
+                is Result.Error -> onAuthError(it.message)
+            }
+        })
         return inflater.inflate(R.layout.fragment_auth_password, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         submitButton.setOnClickListener {
-
+            authViewModel.authManager.authByPassword(passwordText.text.toString())
         }
+    }
+
+    private fun showLoading(isLoading: Boolean) {
+        progressBar.visibility = if (isLoading) View.VISIBLE else View.INVISIBLE
+    }
+
+    private fun onAuthSuccess() {
+        showLoading(isLoading = false)
+    }
+
+    private fun onAuthError(message: String) {
+        showLoading(isLoading = false)
     }
 
     interface PasswordAuthenticatorCallback {
