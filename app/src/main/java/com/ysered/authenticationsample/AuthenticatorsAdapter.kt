@@ -4,12 +4,12 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.ysered.authenticationsample.sdk.Authenticator
+import com.ysered.authenticationsample.sdk.AuthenticatorInfo
 import kotlinx.android.synthetic.main.item_authenticator.view.*
 
 
 class AuthenticatorsAdapter(
-        val authList: List<Authenticator>,
+        val authList: List<AuthenticatorInfo>,
         val onAuthenticatorClickListener: OnAuthenticatorClickListener
 ) : RecyclerView.Adapter<AuthenticatorsAdapter.AuthenticatorHolder>() {
 
@@ -27,7 +27,7 @@ class AuthenticatorsAdapter(
         return authList.size
     }
 
-    private fun getAuthenticator(position: Int): Authenticator {
+    private fun getAuthenticatorInfo(position: Int): AuthenticatorInfo {
         return authList[position]
     }
 
@@ -35,12 +35,12 @@ class AuthenticatorsAdapter(
 
         init {
             itemView.setOnClickListener {
-                val authenticator = getAuthenticator(adapterPosition)
-                onAuthenticatorClickListener.onClick(authenticator)
+                val info = getAuthenticatorInfo(adapterPosition)
+                onAuthenticatorClickListener.onClick(info)
             }
         }
 
-        fun bind(authenticator: Authenticator) {
+        fun bind(authenticator: AuthenticatorInfo) {
             itemView.titleText.text = authenticator.title
             itemView.descriptionText.text = authenticator.description
         }
@@ -48,6 +48,6 @@ class AuthenticatorsAdapter(
 
     interface OnAuthenticatorClickListener {
 
-        fun onClick(authenticator: Authenticator)
+        fun onClick(authenticator: AuthenticatorInfo)
     }
 }

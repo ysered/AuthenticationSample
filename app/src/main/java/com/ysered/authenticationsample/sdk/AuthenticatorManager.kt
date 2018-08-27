@@ -1,47 +1,76 @@
 package com.ysered.authenticationsample.sdk
 
-import com.ysered.authenticationsample.AUTH_LIST_LOAD_TIME_MS
+import android.arch.lifecycle.MutableLiveData
+import com.ysered.authenticationsample.Result
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 
 
 object AuthenticatorManager {
 
-    private var fetchListJob: Job? = null
-    private var passwordAuthenticator: PasswordAuthenticator? = null
-    private var fingerprintAuthenticator: FingerprintAuthenticator? = null
-    private var authenticatorList = emptyList<Authenticator>()
+    private val api = FakeTransmitApi()
 
-    private val inProgress: Boolean
-        get() = fetchListJob?.isActive ?: false
+    private var authSet = emptySet<AuthenticatorInfo>()
 
-    fun fetchAuthenticators(onListResult: OnListResult<Authenticator>) {
-        if (!inProgress) {
-            fetchListJob = launch(CommonPool) {
-                delay(AUTH_LIST_LOAD_TIME_MS)
-                passwordAuthenticator = PasswordAuthenticator()
-                fingerprintAuthenticator = FingerprintAuthenticator()
-                authenticatorList = listOf(passwordAuthenticator!!, fingerprintAuthenticator!!)
-                onListResult.onPositive(authenticatorList)
+    private var authListJob: Job? = null
+    private var passwordAuthJob: Job? = null
+    private var fingerprintAuthJob: Job? = null
+
+    private var passwordAuthData = MutableLiveData<Result<Unit>>()
+
+    val authListData = MutableLiveData<Result<List<AuthenticatorInfo>>>()
+        get () {
+            // cached
+            if (authSet.isNotEmpty()) {
+                field.postValue(Result.Success(authSet.toList()))
+                return field
             }
+            // job already in progress
+            if (authListJob?.isActive == true) {
+                field.postValue(Result.InProgress())
+                return field
+            }
+            authListJob = launch(CommonPool) {
+                field.postValue(Result.InProgress())
+                api.authenticatorsList(object : OnListResult<AuthenticatorInfo> {
+                    override fun onPositive(result: List<AuthenticatorInfo>) {
+                        authSet = result.toSet()
+                        field.postValue(Result.Success(result))
+                    }
+
+                    override fun onError(message: String) {
+                        field.postValue(Result.Error(message))
+                    }
+                })
+            }
+            return field
         }
+
+
+    fun authByPassword(password: String): MutableLiveData<Result<Unit>> {
+        if (passwordAuthJob?.isActive == true) {
+            passwordAuthData.postValue(Result.InProgress())
+            return passwordAuthData
+        }
+        passwordAuthJob = launch(CommonPool) {
+            passwordAuthData.postValue(Result.InProgress())
+            api.authenticate(password, object: OnResult {
+                override fun onPositive() {
+                    passwordAuthData.postValue(Result.Success(Unit))
+                }
+
+                override fun onError(message: String) {
+                    passwordAuthData.postValue(Result.Error(message))
+                }
+            })
+        }
+        return passwordAuthData
     }
 
-    fun authenticateByPassword(password: String, onResult: OnResult) {
-        val request = AuthenticatorRequest(password = password)
-        passwordAuthenticator?.authenticate(request, onResult)
-    }
-
-    fun authenticateByFingerprint(useFingerPrint: Boolean, onResult: OnResult) {
-        val request = AuthenticatorRequest(useFingerPrint = useFingerPrint)
-        fingerprintAuthenticator?.authenticate(request, onResult)
-    }
-
-    fun cancelAll() {
-        fetchListJob?.cancel()
-        passwordAuthenticator?.cancel()
-        fingerprintAuthenticator?.cancel()
+    fun stopAllJobs() {
+        authListJob?.cancel()
+        passwordAuthJob?.cancel()
+        fingerprintAuthJob?.cancel()
     }
 }

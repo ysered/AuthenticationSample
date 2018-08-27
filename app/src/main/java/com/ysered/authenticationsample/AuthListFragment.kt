@@ -11,15 +11,13 @@ import android.view.View
 import android.view.ViewGroup
 import com.ysered.authenticationsample.ext.debug
 import com.ysered.authenticationsample.ext.replaceFragment
-import com.ysered.authenticationsample.sdk.Authenticator
-import com.ysered.authenticationsample.sdk.FingerprintAuthenticator
-import com.ysered.authenticationsample.sdk.PasswordAuthenticator
+import com.ysered.authenticationsample.sdk.AuthenticatorInfo
 import kotlinx.android.synthetic.main.fragment_auth_list.*
 
 
 class AuthListFragment: Fragment() {
 
-    private lateinit var authenticatorsViewModel: AuthenticatorsViewModel
+    private lateinit var authListViewModel: AuthListViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_auth_list, container, false)
@@ -32,9 +30,9 @@ class AuthListFragment: Fragment() {
             orientation = LinearLayoutManager.VERTICAL
         }
 
-        authenticatorsViewModel = ViewModelProviders.of(this)
-                .get(AuthenticatorsViewModel::class.java)
-        authenticatorsViewModel.observeAuthList(this, Observer {
+        authListViewModel = ViewModelProviders.of(this)
+                .get(AuthListViewModel::class.java)
+        authListViewModel.observeAuthList(this, Observer {
             when (it) {
                 is Result.InProgress -> showLoading()
                 is Result.Success -> showList(it.payload)
@@ -47,12 +45,12 @@ class AuthListFragment: Fragment() {
         progressBar.visibility = if (isShow) View.VISIBLE else View.GONE
     }
 
-    private fun showList(authenticators: List<Authenticator>) {
+    private fun showList(authenticators: List<AuthenticatorInfo>) {
         showLoading(isShow = false)
         showError(isShow = false)
         authList.adapter = AuthenticatorsAdapter(authenticators,
                 object : AuthenticatorsAdapter.OnAuthenticatorClickListener {
-                    override fun onClick(authenticator: Authenticator) {
+                    override fun onClick(authenticator: AuthenticatorInfo) {
                         showAuthenticatorScreen(authenticator)
                     }
                 })
@@ -68,14 +66,13 @@ class AuthListFragment: Fragment() {
         }
     }
 
-    private fun showAuthenticatorScreen(authenticator: Authenticator) {
+    private fun showAuthenticatorScreen(info: AuthenticatorInfo) {
         showError(isShow = false)
-        authenticatorsViewModel.currentAuthenticator = authenticator
-        when (authenticator) {
-            is PasswordAuthenticator -> {
+        when (info) {
+            is AuthenticatorInfo.Password -> {
                 activity?.replaceFragment(PasswordFragment(), addToBackStack = true)
             }
-            is FingerprintAuthenticator -> debug("!!!!!!!!!!!!!! fingerprint auth")
+            is AuthenticatorInfo.Fingerprint -> debug("!!!!!!!!!!!!!! fingerprint auth")
         }
     }
 

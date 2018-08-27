@@ -25,7 +25,7 @@ class PasswordFragment : Fragment() {
     }
 
     private var authCallback: PasswordAuthenticatorCallback? = null
-    private lateinit var authViewModel: AuthenticatorsViewModel
+    private lateinit var authViewModel: AuthListViewModel
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -36,14 +36,15 @@ class PasswordFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         authViewModel = ViewModelProviders.of(this)
-                .get(AuthenticatorsViewModel::class.java)
+                .get(AuthListViewModel::class.java)
+
         return inflater.inflate(R.layout.fragment_auth_password, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         submitButton.setOnClickListener {
-            //authViewModel.authenticateByPassword()
+
         }
     }
 
@@ -51,5 +52,4 @@ class PasswordFragment : Fragment() {
 
         fun onAuthenticate(password: String)
     }
-
 }

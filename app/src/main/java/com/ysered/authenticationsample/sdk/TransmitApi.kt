@@ -2,7 +2,7 @@ package com.ysered.authenticationsample.sdk
 
 interface TransmitApi {
 
-    fun authenticatorsList(onListResult: OnListResult<Authenticator>)
+    fun authenticatorsList(onListResult: OnListResult<AuthenticatorInfo>)
 
     fun authenticate(password: String, onResult: OnResult)
 
