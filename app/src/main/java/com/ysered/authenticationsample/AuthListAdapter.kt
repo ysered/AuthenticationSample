@@ -1,5 +1,7 @@
 package com.ysered.authenticationsample
 
+import android.content.Context
+import android.support.v4.content.ContextCompat
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -8,10 +10,14 @@ import com.ysered.authenticationsample.sdk.AuthenticatorInfo
 import kotlinx.android.synthetic.main.item_authenticator.view.*
 
 
-class AuthenticatorsAdapter(
+class AuthListAdapter(
+        context: Context,
         val authList: List<AuthenticatorInfo>,
         val onAuthenticatorClickListener: OnAuthenticatorClickListener
-) : RecyclerView.Adapter<AuthenticatorsAdapter.AuthenticatorHolder>() {
+) : RecyclerView.Adapter<AuthListAdapter.AuthenticatorHolder>() {
+
+    private val normalColor = ContextCompat.getColor(context, R.color.white)
+    private val failedColor = ContextCompat.getColor(context, R.color.colorDeepOrange200)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AuthenticatorHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -43,11 +49,13 @@ class AuthenticatorsAdapter(
         fun bind(authenticator: AuthenticatorInfo) {
             itemView.titleText.text = authenticator.title
             itemView.descriptionText.text = authenticator.description
+            val bg = if (authenticator.isFailed) failedColor else normalColor
+            itemView.setBackgroundColor(bg)
         }
     }
 
     interface OnAuthenticatorClickListener {
 
-        fun onClick(authenticator: AuthenticatorInfo)
+        fun onClick(info: AuthenticatorInfo)
     }
 }

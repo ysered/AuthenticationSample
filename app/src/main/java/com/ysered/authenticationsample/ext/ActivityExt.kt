@@ -16,3 +16,23 @@ fun AppCompatActivity.replaceFragment(fragment: Fragment, containerId: Int = and
 fun Activity.replaceFragment(fragment: Fragment, containerId: Int = android.R.id.content, addToBackStack: Boolean = true) {
     (this as? AppCompatActivity)?.replaceFragment(fragment, containerId, addToBackStack)
 }
+
+fun AppCompatActivity.popFragment() {
+    supportFragmentManager?.popBackStack()
+}
+
+fun Activity.popFragment() {
+    (this as? AppCompatActivity)?.popFragment()
+}
+
+fun AppCompatActivity.clearAllFragments() {
+    supportFragmentManager?.fragments?.forEach { fragment ->
+        supportFragmentManager?.beginTransaction()
+                ?.remove(fragment)
+                ?.commit()
+    }
+}
+
+fun Activity.clearAllFragments() {
+    (this as? AppCompatActivity)?.clearAllFragments()
+}

@@ -1,14 +1,18 @@
 package com.ysered.authenticationsample.sdk
 
-sealed class AuthenticatorInfo(val title: String, val description: String) {
+sealed class AuthenticatorInfo(
+        val title: String,
+        val description: String,
+        var isFailed: Boolean = false
+) {
 
     class Password(var password: String = "") : AuthenticatorInfo(
             title = "Password",
-            description = "User password to authenticate"
+            description = "Use password to authenticate"
     )
 
     class Fingerprint(var useFingerprint: Boolean = false) : AuthenticatorInfo(
             title = "Fingerprint",
-            description = "User fingerprint sensor to authenticate"
+            description = "Use fingerprint sensor to authenticate"
     )
 }

@@ -26,7 +26,7 @@ class FakeTransmitApi : TransmitApi {
         val inProgress = passwordAuthJob?.isActive ?: false
         if (inProgress) return
         passwordAuthJob = launch(CommonPool) {
-            delay(3_000)
+            delay(2_000)
             if (password == "123456") {
                 onResult.onPositive()
             } else {

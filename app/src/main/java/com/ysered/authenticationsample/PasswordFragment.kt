@@ -8,19 +8,12 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.ysered.authenticationsample.ext.replace
 import kotlinx.android.synthetic.main.fragment_auth_password.*
 
 class PasswordFragment : Fragment() {
 
-    private var authCallback: PasswordAuthenticatorCallback? = null
     private lateinit var authViewModel: AuthListViewModel
-
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        if (context is PasswordAuthenticatorCallback) {
-            authCallback = context
-        }
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         authViewModel = ViewModelProviders.of(this)
@@ -48,14 +41,11 @@ class PasswordFragment : Fragment() {
 
     private fun onAuthSuccess() {
         showLoading(isLoading = false)
+
     }
 
     private fun onAuthError(message: String) {
         showLoading(isLoading = false)
-    }
-
-    interface PasswordAuthenticatorCallback {
-
-        fun onAuthenticate(password: String)
+        replace(ErrorFragment.newInstance(message), addToBackStack = true)
     }
 }

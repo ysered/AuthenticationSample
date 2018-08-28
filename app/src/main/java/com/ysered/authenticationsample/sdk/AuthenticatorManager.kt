@@ -5,7 +5,9 @@ import com.ysered.authenticationsample.Result
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.withTimeout
 
+const val DEFAULT_AUTH_TIMEOUT_MS = 3_000L
 
 object AuthenticatorManager {
 
@@ -48,22 +50,25 @@ object AuthenticatorManager {
         }
 
 
-    fun authByPassword(password: String) {
+    fun authByPassword(password: String, timeout: Long = DEFAULT_AUTH_TIMEOUT_MS) {
         if (passwordAuthJob?.isActive == true) {
-            passwordAuthData.postValue(Result.InProgress())
             return
         }
         passwordAuthJob = launch(CommonPool) {
-            passwordAuthData.postValue(Result.InProgress())
-            api.authenticate(password, object: OnResult {
-                override fun onPositive() {
-                    passwordAuthData.postValue(Result.Success(Unit))
-                }
+            withTimeout(timeout) {
+                passwordAuthData.postValue(Result.InProgress())
+                api.authenticate(password, object : OnResult {
+                    override fun onPositive() {
+                        passwordAuthData.postValue(Result.Success(Unit))
+                        //passwordAuthData.postValue(Result.None())
+                    }
 
-                override fun onError(message: String) {
-                    passwordAuthData.postValue(Result.Error(message))
-                }
-            })
+                    override fun onError(message: String) {
+                        passwordAuthData.postValue(Result.Error(message))
+                        //passwordAuthData.postValue(Result.None())
+                    }
+                })
+            }
         }
     }
 
