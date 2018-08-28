@@ -19,9 +19,10 @@ object AuthenticatorManager {
     private var passwordAuthJob: Job? = null
     private var fingerprintAuthJob: Job? = null
 
-    val passwordAuthData = MutableLiveData<Result<Unit>>()
+    var passwordAuthData = MutableLiveData<Result<Unit>>()
 
-    val authListData = MutableLiveData<Result<List<AuthenticatorInfo>>>()
+    var authListData = MutableLiveData<Result<List<AuthenticatorInfo>>>()
+        private set
         get () {
             // cached
             if (authSet.isNotEmpty()) {
@@ -60,16 +61,21 @@ object AuthenticatorManager {
                 api.authenticate(password, object : OnResult {
                     override fun onPositive() {
                         passwordAuthData.postValue(Result.Success(Unit))
-                        //passwordAuthData.postValue(Result.None())
+                        val updated = authSet.filter { it !is AuthenticatorInfo.Password }
+                        authListData.postValue(Result.Success(updated))
+                        authSet = updated.toSet()
                     }
 
                     override fun onError(message: String) {
                         passwordAuthData.postValue(Result.Error(message))
-                        //passwordAuthData.postValue(Result.None())
                     }
                 })
             }
         }
+    }
+
+    fun resetAuthData() {
+        passwordAuthData = MutableLiveData()
     }
 
     fun stopAllJobs() {

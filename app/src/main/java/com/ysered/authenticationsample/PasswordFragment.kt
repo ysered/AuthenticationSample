@@ -14,6 +14,14 @@ import kotlinx.android.synthetic.main.fragment_auth_password.*
 class PasswordFragment : Fragment() {
 
     private lateinit var authViewModel: AuthListViewModel
+    private lateinit var resultCallback: PasswordAuthResultCallback
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        if (context is PasswordAuthResultCallback) {
+            resultCallback = context
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         authViewModel = ViewModelProviders.of(this)
@@ -21,7 +29,7 @@ class PasswordFragment : Fragment() {
         authViewModel.authManager.passwordAuthData.observe(this, Observer {
             when (it) {
                 is Result.InProgress -> showLoading(isLoading = true)
-                is Result.Success -> it.payload
+                is Result.Success -> onAuthSuccess()
                 is Result.Error -> onAuthError(it.message)
             }
         })
@@ -41,7 +49,7 @@ class PasswordFragment : Fragment() {
 
     private fun onAuthSuccess() {
         showLoading(isLoading = false)
-
+        resultCallback.onPasswordAuthSuccess()
     }
 
     private fun onAuthError(message: String) {

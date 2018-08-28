@@ -24,11 +24,11 @@ class ErrorFragment : Fragment() {
         }
     }
 
-    private lateinit var callback: Callback
+    private lateinit var callback: PasswordAuthResultCallback
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
-        if (context is Callback) {
+        if (context is PasswordAuthResultCallback) {
             callback = context
         }
     }
@@ -41,13 +41,7 @@ class ErrorFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         errorText.text = getStringArg(ARG_ERROR)
         retryButton.setOnClickListener {
-            callback.onPasswordAuthError()
+            callback.onPasswordAuthFailed()
         }
-    }
-
-    interface Callback {
-        fun onPasswordAuthError()
-
-        fun onFingerprintAuthError()
     }
 }
