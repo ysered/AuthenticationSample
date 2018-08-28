@@ -6,17 +6,23 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.ysered.authenticationsample.ext.getIntArg
 import com.ysered.authenticationsample.ext.getStringArg
 import kotlinx.android.synthetic.main.fragment_auth_error.*
 
 class ErrorFragment : Fragment() {
 
     companion object {
-        const val ARG_ERROR = "arg_error"
+        const val ERROR_PASSWORD = 1
+        const val ERROR_FINGERPRINT = 2
 
-        fun newInstance(message: String): ErrorFragment {
+        const val ARG_ERROR = "arg_error"
+        const val ARG_ERROR_TYPE = "arg_error_type"
+
+        fun newInstance(message: String, type: Int): ErrorFragment {
             val args = Bundle().apply {
                 putString(ARG_ERROR, message)
+                putInt(ARG_ERROR_TYPE, type)
             }
             return ErrorFragment().apply {
                 arguments = args
@@ -24,11 +30,11 @@ class ErrorFragment : Fragment() {
         }
     }
 
-    private lateinit var callback: PasswordAuthResultCallback
+    private lateinit var callback: AuthResultCallback
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
-        if (context is PasswordAuthResultCallback) {
+        if (context is AuthResultCallback) {
             callback = context
         }
     }
@@ -41,7 +47,10 @@ class ErrorFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         errorText.text = getStringArg(ARG_ERROR)
         retryButton.setOnClickListener {
-            callback.onPasswordAuthFailed()
+            when (getIntArg(ARG_ERROR_TYPE)) {
+                ERROR_PASSWORD -> callback.onPasswordAuthFailed()
+                ERROR_FINGERPRINT -> callback.onFingerprintAuthFailed()
+            }
         }
     }
 }

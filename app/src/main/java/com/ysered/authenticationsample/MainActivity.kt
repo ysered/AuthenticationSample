@@ -7,7 +7,7 @@ import com.ysered.authenticationsample.ext.clearAllFragments
 import com.ysered.authenticationsample.ext.popFragment
 import com.ysered.authenticationsample.ext.replaceFragment
 
-class MainActivity : AppCompatActivity(), PasswordAuthResultCallback {
+class MainActivity : AppCompatActivity(), AuthResultCallback {
 
     private lateinit var authListViewModel: AuthListViewModel
 
@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity(), PasswordAuthResultCallback {
         }
     }
 
-    override fun onPasswordAuthSuccess() {
+    override fun onPasswordAuthSucceeded() {
         popFragment()
     }
 
@@ -30,6 +30,13 @@ class MainActivity : AppCompatActivity(), PasswordAuthResultCallback {
         authListViewModel.authManager.resetAuthData()
         clearAllFragments()
         val newFragment = AuthListFragment.newInstance(isPasswordAuthFailed = true)
+        replaceFragment(newFragment, addToBackStack = false)
+    }
+
+    override fun onFingerprintAuthFailed() {
+        authListViewModel.authManager.resetAuthData()
+        clearAllFragments()
+        val newFragment = AuthListFragment.newInstance(isFingerPrintAuthFailed = true)
         replaceFragment(newFragment, addToBackStack = false)
     }
 }

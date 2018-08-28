@@ -3,4 +3,5 @@
     <string name="retry">Retry</string>
     <string name="submit">Submit</string>
     <string name="password">Password</string>
+    <string name="use_fingerprint">Use fingerprint</string>
 </resources>

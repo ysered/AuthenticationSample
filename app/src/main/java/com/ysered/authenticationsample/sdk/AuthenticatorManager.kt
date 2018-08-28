@@ -5,9 +5,7 @@ import com.ysered.authenticationsample.Result
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.withTimeout
 
-const val DEFAULT_AUTH_TIMEOUT_MS = 3_000L
 
 object AuthenticatorManager {
 
@@ -20,6 +18,7 @@ object AuthenticatorManager {
     private var fingerprintAuthJob: Job? = null
 
     var passwordAuthData = MutableLiveData<Result<Unit>>()
+    var fingerprintAuthData = MutableLiveData<Result<Unit>>()
 
     var authListData = MutableLiveData<Result<List<AuthenticatorInfo>>>()
         private set
@@ -51,31 +50,51 @@ object AuthenticatorManager {
         }
 
 
-    fun authByPassword(password: String, timeout: Long = DEFAULT_AUTH_TIMEOUT_MS) {
+    fun authByPassword(password: String) {
         if (passwordAuthJob?.isActive == true) {
             return
         }
         passwordAuthJob = launch(CommonPool) {
-            withTimeout(timeout) {
-                passwordAuthData.postValue(Result.InProgress())
-                api.authenticate(password, object : OnResult {
-                    override fun onPositive() {
-                        passwordAuthData.postValue(Result.Success(Unit))
-                        val updated = authSet.filter { it !is AuthenticatorInfo.Password }
-                        authListData.postValue(Result.Success(updated))
-                        authSet = updated.toSet()
-                    }
+            passwordAuthData.postValue(Result.InProgress())
+            api.authenticate(password, object : OnResult {
+                override fun onPositive() {
+                    passwordAuthData.postValue(Result.Success(Unit))
+                    val updated = authSet.filter { it !is AuthenticatorInfo.Password }
+                    authListData.postValue(Result.Success(updated))
+                    authSet = updated.toSet()
+                }
 
-                    override fun onError(message: String) {
-                        passwordAuthData.postValue(Result.Error(message))
-                    }
-                })
-            }
+                override fun onError(message: String) {
+                    passwordAuthData.postValue(Result.Error(message))
+                }
+            })
+        }
+    }
+
+    fun authByFingerprint(useFingerprint: Boolean) {
+        if (fingerprintAuthJob?.isActive == true) {
+            return
+        }
+        fingerprintAuthJob = launch(CommonPool) {
+            fingerprintAuthData.postValue(Result.InProgress())
+            api.authenticate(useFingerprint, object : OnResult {
+                override fun onPositive() {
+                    fingerprintAuthData.postValue(Result.Success(Unit))
+                    val updated = authSet.filter { it !is AuthenticatorInfo.Fingerprint }
+                    authListData.postValue(Result.Success(updated))
+                    authSet = updated.toSet()
+                }
+
+                override fun onError(message: String) {
+                    fingerprintAuthData.postValue(Result.Error(message))
+                }
+            })
         }
     }
 
     fun resetAuthData() {
         passwordAuthData = MutableLiveData()
+        fingerprintAuthData = MutableLiveData()
     }
 
     fun stopAllJobs() {

@@ -2,6 +2,7 @@ package com.ysered.authenticationsample
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
@@ -9,9 +10,9 @@ import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.ysered.authenticationsample.ext.debug
 import com.ysered.authenticationsample.ext.getBooleanArg
 import com.ysered.authenticationsample.ext.replace
+import com.ysered.authenticationsample.ext.show
 import com.ysered.authenticationsample.sdk.AuthenticatorInfo
 import kotlinx.android.synthetic.main.fragment_auth_list.*
 
@@ -37,7 +38,9 @@ class AuthListFragment : Fragment() {
 
     private lateinit var authListViewModel: AuthListViewModel
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater,
+                              container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_auth_list, container, false)
     }
 
@@ -60,6 +63,12 @@ class AuthListFragment : Fragment() {
                 is Result.Error -> showError(it.message)
             }
         })
+        authListViewModel.authManager.fingerprintAuthData.observe(this, Observer {
+            when (it) {
+                is Result.InProgress -> showLoading()
+                is Result.Error -> showError(it.message)
+            }
+        })
     }
 
     private fun populateFailedInfo(authInfoList: List<AuthenticatorInfo>): List<AuthenticatorInfo> {
@@ -78,12 +87,13 @@ class AuthListFragment : Fragment() {
     }
 
     private fun showLoading(isShow: Boolean = true) {
-        progressBar.visibility = if (isShow) View.VISIBLE else View.GONE
+        val visibility = if (isShow) View.VISIBLE else View.GONE
+        progressBar.visibility = visibility
+        progressBarContainer.visibility = visibility
     }
 
     private fun showList(infoList: List<AuthenticatorInfo>) {
         showLoading(isShow = false)
-        showError(isShow = false)
         authList.adapter = AuthListAdapter(context!!, infoList,
                 object : AuthListAdapter.OnAuthenticatorClickListener {
                     override fun onClick(info: AuthenticatorInfo) {
@@ -92,21 +102,15 @@ class AuthListFragment : Fragment() {
                 })
     }
 
-    private fun showError(message: String = "", isShow: Boolean = true) {
+    private fun showError(message: String) {
         showLoading(isShow = false)
-        if (isShow) {
-            errorText.visibility = View.VISIBLE
-            errorText.text = message
-        } else {
-            errorText.visibility = View.INVISIBLE
-        }
+        replace(ErrorFragment.newInstance(message, ErrorFragment.ERROR_FINGERPRINT), addToBackStack = true)
     }
 
     private fun showAuthenticatorScreen(info: AuthenticatorInfo) {
-        showError(isShow = false)
         when (info) {
-            is AuthenticatorInfo.Password -> replace(PasswordFragment(), addToBackStack = true)
-            is AuthenticatorInfo.Fingerprint -> debug("!!!!!!!!!!!!!! fingerprint auth")
+            is AuthenticatorInfo.Password -> replace(PasswordAuthFragment(), addToBackStack = true)
+            is AuthenticatorInfo.Fingerprint -> show(FingerprintDialogFragment())
         }
     }
 

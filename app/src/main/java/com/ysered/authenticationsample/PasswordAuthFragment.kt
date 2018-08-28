@@ -11,14 +11,14 @@ import android.view.ViewGroup
 import com.ysered.authenticationsample.ext.replace
 import kotlinx.android.synthetic.main.fragment_auth_password.*
 
-class PasswordFragment : Fragment() {
+class PasswordAuthFragment : Fragment() {
 
     private lateinit var authViewModel: AuthListViewModel
-    private lateinit var resultCallback: PasswordAuthResultCallback
+    private lateinit var resultCallback: AuthResultCallback
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
-        if (context is PasswordAuthResultCallback) {
+        if (context is AuthResultCallback) {
             resultCallback = context
         }
     }
@@ -49,11 +49,12 @@ class PasswordFragment : Fragment() {
 
     private fun onAuthSuccess() {
         showLoading(isLoading = false)
-        resultCallback.onPasswordAuthSuccess()
+        resultCallback.onPasswordAuthSucceeded()
     }
 
     private fun onAuthError(message: String) {
         showLoading(isLoading = false)
-        replace(ErrorFragment.newInstance(message), addToBackStack = true)
+        val errorFragment = ErrorFragment.newInstance(message, ErrorFragment.ERROR_PASSWORD)
+        replace(errorFragment, addToBackStack = true)
     }
 }
