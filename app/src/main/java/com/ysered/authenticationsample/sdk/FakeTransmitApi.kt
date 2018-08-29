@@ -26,7 +26,7 @@ class FakeTransmitApi : TransmitApi {
         val inProgress = passwordAuthJob?.isActive ?: false
         if (inProgress) return
         passwordAuthJob = launch(CommonPool) {
-            delay(2_000)
+            delay(5_000)
             if (password == "123456") {
                 onResult.onPositive()
             } else {
@@ -39,7 +39,7 @@ class FakeTransmitApi : TransmitApi {
         val inProgress = fingerprintAuthJob?.isActive ?: false
         if (inProgress) return
         fingerprintAuthJob = launch(CommonPool) {
-            delay(3_000)
+            delay(5_000)
             if (useFingerPrint) {
                 onResult.onPositive()
             } else {
@@ -50,6 +50,7 @@ class FakeTransmitApi : TransmitApi {
 
     fun cancelAll() {
         authListJob?.cancel()
-
+        passwordAuthJob?.cancel()
+        fingerprintAuthJob?.cancel()
     }
 }

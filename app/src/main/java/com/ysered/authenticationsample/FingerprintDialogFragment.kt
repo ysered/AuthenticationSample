@@ -1,7 +1,6 @@
 package com.ysered.authenticationsample
 
 import android.app.Dialog
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
@@ -21,16 +20,14 @@ class FingerprintDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val authViewModel = ViewModelProviders.of(this)
-                .get(AuthListViewModel::class.java)
         val view = LayoutInflater.from(context).inflate(R.layout.fragment_auth_fingerprint, null)
         return AlertDialog.Builder(context!!)
                 .setView(view)
                 .setPositiveButton(R.string.use_fingerprint) { _, _ ->
-                    authViewModel.authManager.authByFingerprint(useFingerprint = true)
+                    callback.onUseFingerprintClicked()
                 }
                 .setNegativeButton(android.R.string.cancel) { _, _ ->
-                    authViewModel.authManager.authByFingerprint(useFingerprint = false)
+                    callback.onCancelClicked()
                 }
                 .create()
     }

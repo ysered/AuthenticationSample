@@ -2,7 +2,6 @@ package com.ysered.authenticationsample
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
@@ -24,8 +23,7 @@ class AuthListFragment : Fragment() {
         const val ARG_IS_FINGERPRINT_AUTH_FAILED = "arg_is_fingerprint_auth_failed"
 
         fun newInstance(isPasswordAuthFailed: Boolean = false,
-                        isFingerPrintAuthFailed: Boolean = false
-        ): AuthListFragment {
+                        isFingerPrintAuthFailed: Boolean = false): AuthListFragment {
             val args = Bundle().apply {
                 putBoolean(ARG_IS_PASSWORD_AUTH_FAILED, isPasswordAuthFailed)
                 putBoolean(ARG_IS_FINGERPRINT_AUTH_FAILED, isFingerPrintAuthFailed)
@@ -55,7 +53,7 @@ class AuthListFragment : Fragment() {
                 .get(AuthListViewModel::class.java)
         authListViewModel.authManager.authListData.observe(this, Observer {
             when (it) {
-                is Result.InProgress -> showLoading()
+                is Result.InProgress -> showLoading(isAuthListLoading = true)
                 is Result.Success -> {
                     val updatedInfoList = populateFailedInfo(it.payload)
                     showList(updatedInfoList)
@@ -65,7 +63,7 @@ class AuthListFragment : Fragment() {
         })
         authListViewModel.authManager.fingerprintAuthData.observe(this, Observer {
             when (it) {
-                is Result.InProgress -> showLoading()
+                is Result.InProgress -> showLoading(isFingerPrintAuthLoading = true)
                 is Result.Error -> showError(it.message)
             }
         })
@@ -86,14 +84,14 @@ class AuthListFragment : Fragment() {
         }
     }
 
-    private fun showLoading(isShow: Boolean = true) {
-        val visibility = if (isShow) View.VISIBLE else View.GONE
+    private fun showLoading(isAuthListLoading: Boolean = false, isFingerPrintAuthLoading: Boolean = false) {
+        val visibility = if (isAuthListLoading or isFingerPrintAuthLoading) View.VISIBLE else View.INVISIBLE
         progressBar.visibility = visibility
         progressBarContainer.visibility = visibility
     }
 
     private fun showList(infoList: List<AuthenticatorInfo>) {
-        showLoading(isShow = false)
+        showLoading(isAuthListLoading = false)
         authList.adapter = AuthListAdapter(context!!, infoList,
                 object : AuthListAdapter.OnAuthenticatorClickListener {
                     override fun onClick(info: AuthenticatorInfo) {
@@ -103,7 +101,8 @@ class AuthListFragment : Fragment() {
     }
 
     private fun showError(message: String) {
-        showLoading(isShow = false)
+        authListViewModel.authManager.resetAuthData()
+        showLoading(isAuthListLoading = false)
         replace(ErrorFragment.newInstance(message, ErrorFragment.ERROR_FINGERPRINT), addToBackStack = true)
     }
 

@@ -18,19 +18,22 @@ object AuthenticatorManager {
     private var fingerprintAuthJob: Job? = null
 
     var passwordAuthData = MutableLiveData<Result<Unit>>()
+        private set
+
     var fingerprintAuthData = MutableLiveData<Result<Unit>>()
+        private set
 
     var authListData = MutableLiveData<Result<List<AuthenticatorInfo>>>()
         private set
         get () {
             // cached
             if (authSet.isNotEmpty()) {
-                field.postValue(Result.Success(authSet.toList()))
+                field.value = Result.Success(authSet.toList())
                 return field
             }
             // job already in progress
             if (authListJob?.isActive == true) {
-                field.postValue(Result.InProgress())
+                field.value = Result.InProgress()
                 return field
             }
             authListJob = launch(CommonPool) {
@@ -98,6 +101,7 @@ object AuthenticatorManager {
     }
 
     fun stopAllJobs() {
+        api.cancelAll()
         authListJob?.cancel()
         passwordAuthJob?.cancel()
         fingerprintAuthJob?.cancel()

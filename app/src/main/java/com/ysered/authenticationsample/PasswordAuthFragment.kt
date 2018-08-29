@@ -53,6 +53,7 @@ class PasswordAuthFragment : Fragment() {
     }
 
     private fun onAuthError(message: String) {
+        authViewModel.authManager.resetAuthData()
         showLoading(isLoading = false)
         val errorFragment = ErrorFragment.newInstance(message, ErrorFragment.ERROR_PASSWORD)
         replace(errorFragment, addToBackStack = true)
