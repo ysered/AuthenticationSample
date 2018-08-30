@@ -26,23 +26,25 @@ class MainActivity : AppCompatActivity(), AuthResultCallback, FingerprintDialogF
         popFragment()
     }
 
-    override fun onPasswordAuthFailed() {
+    override fun onPasswordAuthRetry() {
+        popFragment()
         clearAllFragments()
         val newFragment = AuthListFragment.newInstance(isPasswordAuthFailed = true)
         replaceFragment(newFragment, addToBackStack = false)
     }
 
-    override fun onFingerprintAuthFailed() {
+    override fun onFingerprintAuthRetry() {
+        popFragment()
         clearAllFragments()
         val newFragment = AuthListFragment.newInstance(isFingerPrintAuthFailed = true)
         replaceFragment(newFragment, addToBackStack = false)
     }
 
     override fun onCancelClicked() {
-        authListViewModel.authManager.authByFingerprint(useFingerprint = false)
+        authListViewModel.authByFingerprint(useFingerprint = false)
     }
 
     override fun onUseFingerprintClicked() {
-        authListViewModel.authManager.authByFingerprint(useFingerprint = true)
+        authListViewModel.authByFingerprint(useFingerprint = true)
     }
 }

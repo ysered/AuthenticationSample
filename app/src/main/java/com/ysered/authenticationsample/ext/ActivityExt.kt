@@ -26,11 +26,15 @@ fun Activity.popFragment() {
 }
 
 fun AppCompatActivity.clearAllFragments() {
-    supportFragmentManager?.fragments?.forEach { fragment ->
-        supportFragmentManager?.beginTransaction()
-                ?.remove(fragment)
-                ?.commit()
+    val fragmentCount = supportFragmentManager?.fragments?.size ?: 0
+    if (fragmentCount == 0) {
+        return
     }
+    val transaction = supportFragmentManager?.beginTransaction()
+    supportFragmentManager?.fragments?.forEach { fragment ->
+        transaction?.remove(fragment)
+    }
+    transaction?.commitAllowingStateLoss()
 }
 
 fun Activity.clearAllFragments() {

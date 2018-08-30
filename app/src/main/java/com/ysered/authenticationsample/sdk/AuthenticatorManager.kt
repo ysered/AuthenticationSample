@@ -13,22 +13,27 @@ object AuthenticatorManager {
 
     private var authSet = emptySet<AuthenticatorInfo>()
 
+    private var allAuthPassed = false
     private var authListJob: Job? = null
     private var passwordAuthJob: Job? = null
     private var fingerprintAuthJob: Job? = null
 
     var passwordAuthData = MutableLiveData<Result<Unit>>()
         private set
-
     var fingerprintAuthData = MutableLiveData<Result<Unit>>()
+        private set
+    var fingerPrintAuthInProgress = false
         private set
 
     var authListData = MutableLiveData<Result<List<AuthenticatorInfo>>>()
         private set
         get () {
+            if (allAuthPassed) {
+                return field
+            }
             // cached
             if (authSet.isNotEmpty()) {
-                field.value = Result.Success(authSet.toList())
+                field.postValue(Result.Success(authSet.toList()))
                 return field
             }
             // job already in progress
@@ -52,12 +57,12 @@ object AuthenticatorManager {
             return field
         }
 
-
     fun authByPassword(password: String) {
-        if (passwordAuthJob?.isActive == true) {
+        if (fingerPrintAuthInProgress) {
             return
         }
         passwordAuthJob = launch(CommonPool) {
+            fingerPrintAuthInProgress = true
             passwordAuthData.postValue(Result.InProgress())
             api.authenticate(password, object : OnResult {
                 override fun onPositive() {
@@ -65,10 +70,13 @@ object AuthenticatorManager {
                     val updated = authSet.filter { it !is AuthenticatorInfo.Password }
                     authListData.postValue(Result.Success(updated))
                     authSet = updated.toSet()
+                    allAuthPassed = authSet.isEmpty()
+                    fingerPrintAuthInProgress = false
                 }
 
                 override fun onError(message: String) {
                     passwordAuthData.postValue(Result.Error(message))
+                    fingerPrintAuthInProgress = false
                 }
             })
         }
@@ -86,6 +94,7 @@ object AuthenticatorManager {
                     val updated = authSet.filter { it !is AuthenticatorInfo.Fingerprint }
                     authListData.postValue(Result.Success(updated))
                     authSet = updated.toSet()
+                    allAuthPassed = authSet.isEmpty()
                 }
 
                 override fun onError(message: String) {

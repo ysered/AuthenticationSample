@@ -26,7 +26,7 @@ class PasswordAuthFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         authViewModel = ViewModelProviders.of(this)
                 .get(AuthListViewModel::class.java)
-        authViewModel.authManager.passwordAuthData.observe(this, Observer {
+        authViewModel.observePasswordAuthData(this, Observer {
             when (it) {
                 is Result.InProgress -> showLoading(isLoading = true)
                 is Result.Success -> onAuthSuccess()
@@ -39,7 +39,7 @@ class PasswordAuthFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         submitButton.setOnClickListener {
-            authViewModel.authManager.authByPassword(passwordText.text.toString())
+            authViewModel.authByPassword(passwordText.text.toString())
         }
     }
 
@@ -53,7 +53,7 @@ class PasswordAuthFragment : Fragment() {
     }
 
     private fun onAuthError(message: String) {
-        authViewModel.authManager.resetAuthData()
+        authViewModel.resetAuthData()
         showLoading(isLoading = false)
         val errorFragment = ErrorFragment.newInstance(message, ErrorFragment.ERROR_PASSWORD)
         replace(errorFragment, addToBackStack = true)

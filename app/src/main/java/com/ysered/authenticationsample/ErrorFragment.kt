@@ -48,8 +48,8 @@ class ErrorFragment : Fragment() {
         errorText.text = getStringArg(ARG_ERROR)
         retryButton.setOnClickListener {
             when (getIntArg(ARG_ERROR_TYPE)) {
-                ERROR_PASSWORD -> callback.onPasswordAuthFailed()
-                ERROR_FINGERPRINT -> callback.onFingerprintAuthFailed()
+                ERROR_PASSWORD -> callback.onPasswordAuthRetry()
+                ERROR_FINGERPRINT -> callback.onFingerprintAuthRetry()
             }
         }
     }

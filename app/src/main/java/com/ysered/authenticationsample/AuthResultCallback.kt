@@ -4,7 +4,7 @@ interface AuthResultCallback {
 
     fun onPasswordAuthSucceeded()
 
-    fun onPasswordAuthFailed()
+    fun onPasswordAuthRetry()
 
-    fun onFingerprintAuthFailed()
+    fun onFingerprintAuthRetry()
 }

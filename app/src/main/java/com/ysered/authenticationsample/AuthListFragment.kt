@@ -51,7 +51,7 @@ class AuthListFragment : Fragment() {
 
         authListViewModel = ViewModelProviders.of(this)
                 .get(AuthListViewModel::class.java)
-        authListViewModel.authManager.authListData.observe(this, Observer {
+        authListViewModel.observeAuthListData(this, Observer {
             when (it) {
                 is Result.InProgress -> showLoading(isAuthListLoading = true)
                 is Result.Success -> {
@@ -61,9 +61,15 @@ class AuthListFragment : Fragment() {
                 is Result.Error -> showError(it.message)
             }
         })
-        authListViewModel.authManager.fingerprintAuthData.observe(this, Observer {
+        authListViewModel.observeFingerprintAuthData(this, Observer {
             when (it) {
-                is Result.InProgress -> showLoading(isFingerPrintAuthLoading = true)
+                is Result.InProgress -> {
+                    // looks like view is not ready yet when this data is received
+                    // delaying to show loading
+                    view.postDelayed({ // TODO: remove this hack
+                        showLoading(isFingerPrintAuthLoading = true)
+                    }, 100L)
+                }
                 is Result.Error -> showError(it.message)
             }
         })
@@ -101,7 +107,7 @@ class AuthListFragment : Fragment() {
     }
 
     private fun showError(message: String) {
-        authListViewModel.authManager.resetAuthData()
+        authListViewModel.resetAuthData()
         showLoading(isAuthListLoading = false)
         replace(ErrorFragment.newInstance(message, ErrorFragment.ERROR_FINGERPRINT), addToBackStack = true)
     }
